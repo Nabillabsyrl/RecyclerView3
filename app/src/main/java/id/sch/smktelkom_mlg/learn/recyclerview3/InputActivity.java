@@ -2,11 +2,10 @@ package id.sch.smktelkom_mlg.learn.recyclerview3;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -20,7 +19,7 @@ public class InputActivity extends AppCompatActivity
     EditText etDetail;
     EditText etLokasi;
     ImageView ivFoto;
-    Uri urifoto;
+    Uri uriFoto;
     Hotel hotel;
 
     @Override
@@ -34,86 +33,90 @@ public class InputActivity extends AppCompatActivity
         etLokasi = (EditText) findViewById(R.id.editTextLokasi);
         ivFoto = (ImageView) findViewById(R.id.imageViewFoto);
 
-        ivFoto.setOnClickListener(new View.OnClickListener()
+        hotel = (Hotel) getIntent().getSerializableExtra(MainActivity.HOTEL);
+        if(hotel!=null)
         {
-            @Override
-            public void onClick(View v)
-            {
-                pickPhoto();
-            }
+            setTitle("Edit"+hotel.judul);
+            fillData();
         }
-        );
-        
-        findViewById(R.id.buttonSimpan).setOnClickListener(
-                new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        doSave();
-                    }
-
-                    private void doSave()
-                    {
-                        String judul = etJudul.getText().toString();
-                        String deskripsi = etDeskripsi.getText().toString();
-                        String detail = etDetail.getText().toString();
-                        String lokasi = etLokasi.getText().toString();
-
-                        if (isValid(judul, deskripsi, detail, lokasi, urifoto))
-                        {
-                        hotel = new Hotel(judul, deskripsi, detail, lokasi, urifoto.toString());
-
-                            Intent intent = new Intent();
-                            intent.putExtra(MainActivity.HOTEL,hotel);
-                            setResult(RESULT_OK, intent);
-                            finish();
-                    }
-                }
-
-                    private boolean isValid(String judul, String deskripsi, String detail, String lokasi, Uri urifoto)
-                    {
-                        boolean valid = true;
-                        if(judul.isEmpty())
-                        {
-                            setErrorEmpty(etJudul);
-                            valid= false;
-                        }
-                        if(deskripsi.isEmpty())
-                        {
-                            setErrorEmpty(etDeskripsi);
-                            valid = false;
-                        }
-                        if(detail.isEmpty())
-                        {
-                            setErrorEmpty(etDetail);
-                            valid = false;
-                        }
-                        if(lokasi.isEmpty())
-                        {
-                            setErrorEmpty(etLokasi);
-                            valid = false;
-                        }
-                        if (urifoto == null)
-                        {
-                            Snackbar.make(ivFoto, "Foto Belum Ada", Snackbar.LENGTH_SHORT).show();
-                            valid = false;
-                        }
-                        return valid;
-                    }
-
-                    private void setErrorEmpty(EditText editText)
-                    {
-                        editText.setError(((TextInputLayout) editText.getParent()).getHint() + "Belum Diisi");
-                    }
-                }
-
-
-                    );
-
+        else
+        {
+            setTitle("New Hotel");
+        }
     }
 
-    private void pickPhoto() {
+    private void fillData()
+    {
+        etJudul.setText(hotel.judul);
+        etDeskripsi.setText(hotel.deskripsi);
+        etDetail.setText(hotel.detail);
+        etLokasi.setText(hotel.lokasi);
+        uriFoto = Uri.parse(hotel.foto);
+        ivFoto.setImageURI(uriFoto);
+    }
+
+    private void doSave()
+    {
+        String judul = etJudul.getText().toString();
+        String deskripsi = etDeskripsi.getText().toString();
+        String detail = etDetail.getText().toString();
+        String lokasi = etLokasi.getText().toString();
+
+        if (isValid(judul, deskripsi, detail, lokasi, uriFoto))
+        {
+            hotel = new Hotel(judul, deskripsi, detail, lokasi, uriFoto.toString());
+
+            Intent intent = new Intent();
+            intent.putExtra(MainActivity.HOTEL, hotel);
+            setResult(RESULT_OK, intent);
+            finish();
+        }
+    }
+
+    private boolean isValid (String judul, String deskripsi, String detail, String lokasi, Uri uriFoto)
+    {
+        boolean valid = true;
+        if (judul.isEmpty())
+        {
+            setErrorEmpty(etJudul);
+            valid = false;
+        }
+
+        if (deskripsi.isEmpty())
+        {
+            setErrorEmpty(etDeskripsi);
+            valid = false;
+        }
+
+        if (detail.isEmpty())
+        {
+            setErrorEmpty(etDetail);
+            valid = false;
+        }
+
+        if (lokasi.isEmpty())
+        {
+            setErrorEmpty(etLokasi);
+            valid = false;
+        }
+
+        if (uriFoto == null)
+        {
+            Snackbar.make(ivFoto, "Foto Belum Ada", Snackbar.LENGTH_SHORT)
+                    .show();
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    private void setErrorEmpty(EditText editText){
+        editText.setError(((TextInputLayout)
+                editText.getParent()).getHint() + "Belum Diisi");
+    }
+
+    private void pickPhoto()
+    {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         if (intent.resolveActivity(getPackageManager()) != null)
@@ -124,10 +127,10 @@ public class InputActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_IMAGE_GET&& resultCode == RESULT_OK)
+        if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK)
         {
-           urifoto = data.getData();
-            ivFoto.setImageURI(urifoto);
+            uriFoto = data.getData();
+            ivFoto.setImageURI(uriFoto);
         }
     }
 
